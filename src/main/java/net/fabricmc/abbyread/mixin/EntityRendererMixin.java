@@ -1,6 +1,6 @@
 package net.fabricmc.abbyread.mixin;
 
-import btw.community.abbyread.HUDBrightnessHelper;
+import btw.community.abbyread.adaptivehud.BrightnessHelper;
 import net.minecraft.src.EntityRenderer;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.Minecraft;
@@ -31,6 +31,6 @@ public abstract class EntityRendererMixin {
         float target = 0.2F + 0.8F * lightLevel;
 
         // Update helper
-        HUDBrightnessHelper.setTargetBrightness(target);
+        BrightnessHelper.setTargetBrightness(target);
     }
 }

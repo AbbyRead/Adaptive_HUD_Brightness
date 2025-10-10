@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "btw:addon": [
-      "btw.community.abbyread.AdaptiveHudBrightness"
+      "btw.community.abbyread.adaptivehud.AdaptiveHudBrightness"
     ]
   },
   "custom": {

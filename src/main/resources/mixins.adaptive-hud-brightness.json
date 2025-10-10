@@ -4,9 +4,11 @@
   "package": "net.fabricmc.abbyread.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "EntityRendererMixin"
+    "EntityRendererMixin",
+    "HooksMixin"
   ],
   "client": [
+    "FontRendererMixin",
     "GuiIngameMixin"
   ],
   "injectors": {
