@@ -1,51 +1,53 @@
 package net.fabricmc.abbyread.mixin;
 
 import btw.community.abbyread.adaptivehud.BrightnessHelper;
-import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.Minecraft;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FontRenderer.class)
-public abstract class FontRendererMixin {
+public class FontRendererMixin {
 
-    /**
-     * Modifies the color argument passed to renderString() inside drawString().
-     * This dims HUD and inventory text according to ambient light.
-     */
-    @ModifyArg(
-            method = "drawString(Ljava/lang/String;IIIZ)I", // 5-arg version
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/src/FontRenderer;renderString(Ljava/lang/String;IIIZ)I"
-            ),
-            index = 3
-    )
-    private int adjustTextBrightness(int color) {
+    @Unique
+    private void applyBrightness() {
         Minecraft mc = Minecraft.getMinecraft();
-        EntityPlayer player = mc.thePlayer;
-        float brightness = BrightnessHelper.getCurrentHUDLight(player);
-
-        int r = (int) ((color >> 16 & 0xFF) * brightness);
-        int g = (int) ((color >> 8 & 0xFF) * brightness);
-        int b = (int) ((color & 0xFF) * brightness);
-        int alpha = (color >> 24) & 0xFF;
-
-        return (alpha << 24) | (r << 16) | (g << 8) | b;
+        if (mc != null && mc.thePlayer != null) {
+            float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
+            GL11.glColor4f(brightness, brightness, brightness, 1.0F);
+        } else {
+            // fallback for menus / no player loaded
+            GL11.glColor4f(1f, 1f, 1f, 1f);
+        }
     }
 
-    @ModifyArg(
-            method = "drawString(Ljava/lang/String;III)I", // 4-arg version
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/src/FontRenderer;drawString(Ljava/lang/String;IIIZ)I"
-            ),
-            index = 3
-    )
-    private int adjustTextBrightnessShort(int color) {
-        return adjustTextBrightness(color);
+    @Unique
+    private void resetBrightness() {
+        org.lwjgl.opengl.GL11.glColor4f(1f, 1f, 1f, 1f);
     }
 
+    @Inject(method = "drawString(Ljava/lang/String;III)I", at = @At("HEAD"))
+    private void preDrawString1(String text, int x, int y, int color, CallbackInfoReturnable<Integer> cir) {
+        applyBrightness();
+    }
+
+    @Inject(method = "drawString(Ljava/lang/String;IIIZ)I", at = @At("HEAD"))
+    private void preDrawString2(String text, int x, int y, int color, boolean dropShadow, CallbackInfoReturnable<Integer> cir) {
+        applyBrightness();
+    }
+
+    @Inject(method = "drawString(Ljava/lang/String;III)I", at = @At("RETURN"))
+    private void postDrawString1(String text, int x, int y, int color, CallbackInfoReturnable<Integer> cir) {
+        resetBrightness();
+    }
+
+    @Inject(method = "drawString(Ljava/lang/String;IIIZ)I", at = @At("RETURN"))
+    private void postDrawString2(String text, int x, int y, int color, boolean dropShadow, CallbackInfoReturnable<Integer> cir) {
+        resetBrightness();
+    }
 }
+

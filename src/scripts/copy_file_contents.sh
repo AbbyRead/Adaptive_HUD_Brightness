@@ -16,7 +16,7 @@ PATTERN="${1:-*}"
 
 # Iterate over matching files safely and copy to clipboard
 find . -type f -name "$PATTERN" -print0 | while IFS= read -r -d '' file; do
-    echo "$file"
+    echo "$file:"
     cat "$file"
     echo "-----------------------"
 done | clip.exe
