@@ -16,7 +16,7 @@ public abstract class EntityRendererMixin {
     @Shadow private Minecraft mc;
 
     @Inject(method = "updateCameraAndRender", at = @At("HEAD"))
-    private void onUpdateCameraAndRender(float partialTicks, CallbackInfo ci) {
+    private void updateHudBrightnessTarget (float partialTicks, CallbackInfo ci) {
         if (mc == null || mc.theWorld == null || mc.thePlayer == null) return;
 
         // Player eye position
@@ -27,12 +27,10 @@ public abstract class EntityRendererMixin {
         // Use Minecraft's combined light brightness (0.0F–1.0F)
         float lightLevel = mc.theWorld.getLightBrightness(x, y, z);
 
-        // Convert to 0.3–1.0 HUD brightness
-        float target = 0.3F + 0.7F * lightLevel;
+        // Convert to 0.2–1.0 HUD brightness
+        float target = 0.2F + 0.8F * lightLevel;
 
         // Update helper
         HUDBrightnessHelper.setTargetBrightness(target);
-
-        System.out.println("[HUD BRIGHTNESS] LightLevel: " + lightLevel + ", Target: " + target);
     }
 }

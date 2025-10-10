@@ -15,9 +15,6 @@
   "icon": "assets/abbyread/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.fabricmc.abbyread.AdaptiveHudBrightnessMod"
-    ],
     "btw:addon": [
       "btw.community.abbyread.AdaptiveHudBrightness"
     ]
@@ -26,7 +23,7 @@
     "btw:addon_prefix": "EX"
   },
   "mixins": [
-    "mixins.abbyread.ahb.json"
+    "mixins.adaptive-hud-brightness.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.19",

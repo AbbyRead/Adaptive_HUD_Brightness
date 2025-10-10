@@ -22,7 +22,6 @@ public abstract class GuiIngameMixin {
     private void beforeHotbarRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         float brightness = HUDBrightnessHelper.getSmoothBrightness();
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
-        System.out.println("[HUD DRAW] Hotbar Brightness: " + brightness);
     }
 
     /**
