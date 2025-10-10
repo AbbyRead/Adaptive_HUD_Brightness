@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "adaptive-hud-brightness",
+  "version": "${version}",
+  "name": "Adaptive HUD Brightness",
+  "description": "This addon darkens the Heads-Up Display (item bar, health, and such) based on the lighting around the player.",
+  "authors": [
+    "Abigail Read"
+  ],
+  "contact": {
+    "homepage": "https://github.com/AbbyRead",
+    "sources": "https://github.com/AbbyRead"
+  },
+  "license": "0BSD",
+  "icon": "assets/abbyread/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.fabricmc.abbyread.AdaptiveHudBrightnessMod"
+    ],
+    "btw:addon": [
+      "btw.community.abbyread.AdaptiveHudBrightness"
+    ]
+  },
+  "custom": {
+    "btw:addon_prefix": "EX"
+  },
+  "mixins": [
+    "mixins.abbyread.ahb.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.19",
+    "minecraft": "1.6.4"
+  }
+}
