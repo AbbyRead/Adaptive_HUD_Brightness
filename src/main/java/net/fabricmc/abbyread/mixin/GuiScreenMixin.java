@@ -3,6 +3,7 @@ package net.fabricmc.abbyread.mixin;
 import btw.community.abbyread.adaptivehud.BrightnessHelper;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.GuiScreen;
+import net.minecraft.src.Minecraft;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,8 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiScreen.class)
 public class GuiScreenMixin {
+
     @Shadow
-    protected net.minecraft.src.Minecraft mc;
+    protected Minecraft mc;
 
     @Inject(method = "drawScreen", at = @At("HEAD"))
     private void preDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
