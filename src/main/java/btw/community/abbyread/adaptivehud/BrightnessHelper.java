@@ -3,6 +3,7 @@ package btw.community.abbyread.adaptivehud;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EnumSkyBlock;
 import net.minecraft.src.World;
+import org.lwjgl.opengl.GL11;
 
 public class BrightnessHelper {
 
@@ -62,4 +63,10 @@ public class BrightnessHelper {
         final float ALPHA = 0.2f;
         lastBrightness = lastBrightness * (1.0f - ALPHA) + target * ALPHA;
     }
+
+    public static void applyGLBrightness(EntityPlayer player) {
+        float b = getCurrentHUDLight(player);
+        GL11.glColor4f(b, b, b, 1.0F);
+    }
+
 }

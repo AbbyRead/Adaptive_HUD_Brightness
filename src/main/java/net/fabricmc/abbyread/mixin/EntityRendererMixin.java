@@ -4,6 +4,7 @@ import btw.community.abbyread.adaptivehud.BrightnessHelper;
 import net.minecraft.src.EntityRenderer;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.Minecraft;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,4 +34,34 @@ public abstract class EntityRendererMixin {
         // Update helper
         BrightnessHelper.setTargetBrightness(target);
     }
+    @SuppressWarnings("all")
+    @Inject(
+            method = "updateCameraAndRender",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiScreen;drawScreen(IIF)V",
+                    shift = At.Shift.BEFORE
+            )
+    )
+    private void beforeGuiDraw(float partialTicks, CallbackInfo ci) {
+        Minecraft mc = this.mc;
+        if (mc == null || mc.thePlayer == null) return;
+
+        float brightness = btw.community.abbyread.adaptivehud.BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
+        GL11.glColor4f(brightness, brightness, brightness, 1.0F);
+        System.out.println("[AdaptiveHUD] Tinting GUI at brightness=" + brightness);
+    }
+
+    @Inject(
+            method = "updateCameraAndRender",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiScreen;drawScreen(IIF)V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void afterGuiDraw(float partialTicks, CallbackInfo ci) {
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
 }

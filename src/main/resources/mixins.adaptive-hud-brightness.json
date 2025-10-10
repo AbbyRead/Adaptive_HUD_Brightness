@@ -9,7 +9,9 @@
   ],
   "client": [
     "FontRendererMixin",
-    "GuiIngameMixin"
+    "GuiContainerMixin",
+    "GuiIngameMixin",
+    "GuiScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 0
