@@ -25,6 +25,11 @@ Adaptive HUD Brightness enhances immersion and readability by making the heads-u
 * Both block light (torches, glowstone, etc.) and sky light are taken into account.
 * Gives a realistic balance between underground torchlight and outdoor daylight.
 
+**Other Benefits**
+
+* Should make editing gameplay footage easier if you're trying to boost the brightness/gamma of dark scenes
+  (without making the HUD look blown-out in the process).
+
 ---
 
 ### Client-Side Only
@@ -35,7 +40,7 @@ Adaptive HUD Brightness enhances immersion and readability by making the heads-u
 
 ---
 
-### Optional Extensions (Planned)
+### Planned Extensions
 
 * Night vision and torchlight flicker integration.
 * Configurable minimum and maximum HUD brightness.
