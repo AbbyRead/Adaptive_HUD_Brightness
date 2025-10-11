@@ -1,10 +1,10 @@
 # Adaptive HUD Brightness
 
-A Better Than Wolves Community Edition addon that adjusts the in-game HUD brightness dynamically based on the light level at the player's head.
+A Better Than Wolves Community Edition addon that adjusts the in-game HUD brightness based on the light level at the player's head.
 
 ## Overview
 
-Adaptive HUD Brightness enhances immersion and readability by making the heads-up display (hotbar, health, armor, and other HUD elements) respond to the light conditions the player is experiencing. In dark caves, the HUD dims, and in well-lit areas it brightens, giving a more natural visual feedback for your surroundings while maintaining the classic BTW feel.
+Adaptive HUD Brightness enhances readability by making the heads-up display (hotbar, health, armor, and other HUD elements) respond to the light conditions around the player. In dark caves, the HUD dims, and in well-lit areas it brightens, giving a more natural visual feedback for your surroundings while maintaining the classic BTW feel.
 
 ## Features
 
@@ -12,23 +12,23 @@ Adaptive HUD Brightness enhances immersion and readability by making the heads-u
 
 **Light-Aware HUD**:
 
-* The HUD responds to the light level where the player’s head is located.
-* Blocks and ambient light influence HUD brightness, making low-light areas feel darker and bright areas fully visible.
+* The HUD responds to the light level at the player’s eye position.
+* Vanilla blocks and ambient light influence HUD brightness, making low-light areas darker and bright areas fully visible.
 
-**Smooth Transitions**:
+**Smooth-ish Transitions**:
 
-* Brightness changes are interpolated over time to prevent flickering or abrupt jumps.
+* Brightness changes are smoothed across frames to reduce abrupt jumps.
 * Even in total darkness, a minimum brightness ensures the HUD remains visible.
 
 **Block and Sky Light Considered**:
 
 * Both block light (torches, glowstone, etc.) and sky light are taken into account.
-* Gives a realistic balance between underground torchlight and outdoor daylight.
+* Gives a balance between underground torchlight and outdoor daylight.
 
-**Other Benefits**
+**Other Notes**
 
-* Should make editing gameplay footage easier if you're trying to boost the brightness/gamma of dark scenes
-  (without making the HUD look blown-out in the process).
+* The effect is limited to the HUD; it does **not** affect world lighting.
+* Could help in the video editing process if you need to brighten footage.
 
 ---
 
@@ -40,7 +40,7 @@ Adaptive HUD Brightness enhances immersion and readability by making the heads-u
 
 ---
 
-### Planned Extensions
+### Possible Extensions (Under Consideration)
 
 * Night vision and torchlight flicker integration.
 * Configurable minimum and maximum HUD brightness.
