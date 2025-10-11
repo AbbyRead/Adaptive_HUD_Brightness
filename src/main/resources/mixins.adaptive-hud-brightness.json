@@ -5,12 +5,11 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "RenderItemMixin"
-    //"EntityRendererMixin"
   ],
   "client": [
-    "_MenuBrightnessMixin",
     "FontRendererMixin",
     "GuiButtonMixin",
+    "GuiContainerMixin",
     "GuiIngameMixin",
     "GuiScreenAccessor",
     "GuiScreenMixin",
