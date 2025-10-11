@@ -27,8 +27,7 @@ public abstract class RenderItemMixin {
     // --- renderItemIntoGUI ---
     @Inject(
             method = "renderItemIntoGUI",
-            at = @At("HEAD"),
-            remap = false
+            at = @At("HEAD")
     )
     private void onRenderItemIntoGUIHead(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, CallbackInfo ci) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -38,8 +37,7 @@ public abstract class RenderItemMixin {
 
     @Inject(
             method = "renderItemIntoGUI",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void onRenderItemIntoGUIReturn(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, CallbackInfo ci) {
         DIM_FLAG.set(Boolean.FALSE);
@@ -48,8 +46,7 @@ public abstract class RenderItemMixin {
     // --- renderItemOverlayIntoGUI ---
     @Inject(
             method = "renderItemOverlayIntoGUI(Lnet/minecraft/src/FontRenderer;Lnet/minecraft/src/TextureManager;Lnet/minecraft/src/ItemStack;IILjava/lang/String;)V",
-            at = @At("HEAD"),
-            remap = false
+            at = @At("HEAD")
     )
     private void onRenderOverlayHead(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, String text, CallbackInfo ci) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -59,8 +56,7 @@ public abstract class RenderItemMixin {
 
     @Inject(
             method = "renderItemOverlayIntoGUI(Lnet/minecraft/src/FontRenderer;Lnet/minecraft/src/TextureManager;Lnet/minecraft/src/ItemStack;IILjava/lang/String;)V",
-            at = @At("RETURN"),
-            remap = false
+            at = @At("RETURN")
     )
     private void onRenderOverlayReturn(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, String text, CallbackInfo ci) {
         DIM_FLAG.set(Boolean.FALSE);
