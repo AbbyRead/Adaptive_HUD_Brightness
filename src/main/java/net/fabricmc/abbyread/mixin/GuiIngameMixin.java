@@ -38,7 +38,7 @@ public abstract class GuiIngameMixin {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    // --- Player stats (health, armor, food) ---
+    // --- Action Bar (health, armor, food) dimming ---
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -64,7 +64,7 @@ public abstract class GuiIngameMixin {
     }
 
 
-    // --- XP bar (optional finer control) ---
+    // --- XP bar dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/src/PlayerControllerMP;func_78763_f()Z", shift = At.Shift.AFTER))
     private void preXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
@@ -77,7 +77,7 @@ public abstract class GuiIngameMixin {
         resetColor();
     }
 
-    // --- Hotbar ---
+    // --- Hotbar dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V", ordinal = 0, shift = At.Shift.BEFORE))
     private void preHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
@@ -90,7 +90,7 @@ public abstract class GuiIngameMixin {
         resetColor();
     }
 
-    // --- Inventory slot + item damage bar ---
+    // --- Inventory slot + item damage bar dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V", shift = At.Shift.BEFORE))
     private void preInventorySlotRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
@@ -103,7 +103,7 @@ public abstract class GuiIngameMixin {
         resetColor();
     }
 
-    // --- Chat display ---
+    // --- Chat display dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V", shift = At.Shift.BEFORE))
     private void preChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
