@@ -10,6 +10,7 @@
   "client": [
     "_MenuBrightnessMixin",
     "FontRendererMixin",
+    "GuiButtonMixin",
     "GuiIngameMixin",
     "GuiScreenAccessor",
     "GuiScreenMixin",
