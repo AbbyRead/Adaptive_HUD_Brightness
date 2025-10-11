@@ -22,11 +22,13 @@ public abstract class RenderItemMixin {
     private void adaptivehud$applyBrightness(float r, float g, float b, float a) {
         Minecraft mc = Minecraft.getMinecraft();
         float brightness = 1.0F;
-        if (mc != null && mc.thePlayer != null) {
+
+        // Only dim items when NO GUI is open (i.e. HUD/hotbar context)
+        if (mc != null && mc.thePlayer != null && mc.currentScreen == null) {
             brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
         }
 
-        // Multiply brightness into each RGB component
+        // Apply brightness multiplier
         GL11.glColor4f(r * brightness, g * brightness, b * brightness, a);
     }
 }
