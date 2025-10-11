@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,10 +19,7 @@ public abstract class GuiIngameMixin {
     @Shadow
     private Minecraft mc;
 
-    @Unique
-    private boolean pushedXpAttrib = false;
-
-    // --- Main HUD rendering
+    // --- Main HUD rendering ---
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -33,7 +29,7 @@ public abstract class GuiIngameMixin {
             )
     )
     private void preHudRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        if (mc == null || mc.thePlayer == null) return;
+        if (mc == null || mc.thePlayer == null || ((MinecraftAccessor) mc).getIsGamePaused()) return;
 
         float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
@@ -44,7 +40,7 @@ public abstract class GuiIngameMixin {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    // --- XP bar
+    // --- XP bar ---
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -53,12 +49,10 @@ public abstract class GuiIngameMixin {
                     shift = At.Shift.AFTER
             )
     )
-    private void preXpBlock(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        if (mc == null || mc.thePlayer == null) return;
+    private void preXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
+        if (mc == null || mc.thePlayer == null || ((MinecraftAccessor) mc).getIsGamePaused()) return;
 
         float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
-        GL11.glPushAttrib(GL11.GL_CURRENT_BIT);
-        pushedXpAttrib = true;
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
     }
 
@@ -70,18 +64,11 @@ public abstract class GuiIngameMixin {
                     shift = At.Shift.BEFORE
             )
     )
-    private void postXpBlock(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        if (!pushedXpAttrib) return;
-        pushedXpAttrib = false;
-
-        try {
-            GL11.glPopAttrib();
-        } catch (Throwable t) {
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        }
+    private void postXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    // --- Hotbar
+    // --- Hotbar ---
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -91,11 +78,10 @@ public abstract class GuiIngameMixin {
                     shift = At.Shift.BEFORE
             )
     )
-    private void preHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
-        if (mc == null || mc.thePlayer == null) return;
+    private void preHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
+        if (mc == null || mc.thePlayer == null || ((MinecraftAccessor) mc).getIsGamePaused()) return;
 
         float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
-        GL11.glPushAttrib(GL11.GL_CURRENT_BIT);
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
     }
 
@@ -107,7 +93,7 @@ public abstract class GuiIngameMixin {
                     shift = At.Shift.BEFORE
             )
     )
-    private void postHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
-        GL11.glPopAttrib();
+    private void postHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

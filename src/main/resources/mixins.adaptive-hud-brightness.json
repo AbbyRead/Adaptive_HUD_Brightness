@@ -8,11 +8,12 @@
     //"EntityRendererMixin"
   ],
   "client": [
+    "_MenuBrightnessMixin",
     "FontRendererMixin",
-    //"GuiContainerMixin",
     "GuiIngameMixin",
     "GuiScreenAccessor",
-    "GuiScreenMixin"
+    "GuiScreenMixin",
+    "MinecraftAccessor"
   ],
   "injectors": {
     "defaultRequire": 0

@@ -39,7 +39,6 @@ public class BrightnessHelper {
         // Smooth interpolation (exponential moving average)
         final float ALPHA = 0.2F; // how quickly it moves toward the sampled value
         float next = lastBrightness * (1.0F - ALPHA) + sampled * ALPHA;
-        System.out.println("[AdaptiveHUD] Sky: " + skyLight + ", Block: " + blockLight + ", sampled: " + sampled + ", lastBrightness: " + lastBrightness + ", next: " + next);
         lastBrightness = next;
 
         return next;
