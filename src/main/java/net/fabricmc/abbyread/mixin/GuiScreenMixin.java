@@ -28,6 +28,6 @@ public class GuiScreenMixin {
 
     @Inject(method = "drawScreen", at = @At("RETURN"))
     private void postDrawScreen(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
-        GL11.glColor4f(1f, 1f, 1f, 1f);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

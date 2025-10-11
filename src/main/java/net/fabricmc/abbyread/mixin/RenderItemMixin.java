@@ -29,5 +29,4 @@ public abstract class RenderItemMixin {
         // Multiply brightness into each RGB component
         GL11.glColor4f(r * brightness, g * brightness, b * brightness, a);
     }
-
 }

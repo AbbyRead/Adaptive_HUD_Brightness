@@ -20,10 +20,9 @@ public abstract class GuiIngameMixin {
     @Shadow
     private Minecraft mc;
 
-    /**
-     * Inject just before the HUD elements (health, armor, food, hotbar) are drawn.
-     * BtW / MC 1.6.4: trigger before InventoryPlayer.currentItem is accessed.
-     */
+    @Unique
+    private boolean pushedXpAttrib = false;
+
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -35,26 +34,14 @@ public abstract class GuiIngameMixin {
     private void preHudRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         if (mc == null || mc.thePlayer == null) return;
 
-        // Smoothly calculate current HUD brightness
         float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
-
-        // Apply GL11 color to dim the HUD textures
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
     }
 
-    /**
-     * Reset GL11 color after the HUD has been drawn
-     */
-    @Inject(
-            method = "renderGameOverlay",
-            at = @At("TAIL")
-    )
+    @Inject(method = "renderGameOverlay", at = @At("TAIL"))
     private void postHudRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        GL11.glColor4f(1f, 1f, 1f, 1f);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
-
-    @Unique
-    private boolean pushedXpAttrib = false;
 
     @Inject(
             method = "renderGameOverlay",
@@ -82,13 +69,13 @@ public abstract class GuiIngameMixin {
             )
     )
     private void postXpBlock(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        if (!pushedXpAttrib) return; // only pop if we actually pushed
+        if (!pushedXpAttrib) return;
         pushedXpAttrib = false;
 
         try {
             GL11.glPopAttrib();
         } catch (Throwable t) {
-            GL11.glColor4f(1f, 1f, 1f, 1f);
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
@@ -97,12 +84,13 @@ public abstract class GuiIngameMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
-                    ordinal = 0, // the first drawTexturedModalRect call — hotbar background
+                    ordinal = 0,
                     shift = At.Shift.BEFORE
             )
     )
     private void preHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         if (mc == null || mc.thePlayer == null) return;
+
         float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
         GL11.glPushAttrib(GL11.GL_CURRENT_BIT);
         GL11.glColor4f(brightness, brightness, brightness, 1.0F);
@@ -119,6 +107,4 @@ public abstract class GuiIngameMixin {
     private void postHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         GL11.glPopAttrib();
     }
-
-
 }

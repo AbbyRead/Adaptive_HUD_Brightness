@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class FontRendererMixin {
 
     /**
-     * Adjust the color argument for 5-arg drawString (with dropShadow)
+     * Adjust the color argument for 5-arg drawString (with dropShadow).
      */
     @ModifyArg(
             method = "drawString(Ljava/lang/String;IIIZ)I",
@@ -26,9 +26,7 @@ public abstract class FontRendererMixin {
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = (mc != null) ? mc.thePlayer : null;
 
-        float brightness = (player != null)
-                ? BrightnessHelper.getCurrentHUDLight(player)
-                : 1f;
+        float brightness = (player != null) ? BrightnessHelper.getCurrentHUDLight(player) : 1.0F;
 
         // Extract original RGBA
         int alpha = (color >> 24) & 0xFF;
@@ -46,7 +44,7 @@ public abstract class FontRendererMixin {
     }
 
     /**
-     * Adjust the color argument for 4-arg drawString
+     * Adjust the color argument for 4-arg drawString.
      */
     @ModifyArg(
             method = "drawString(Ljava/lang/String;III)I",
