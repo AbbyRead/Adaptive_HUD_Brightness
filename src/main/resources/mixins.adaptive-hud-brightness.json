@@ -11,8 +11,8 @@
     "FontRendererMixin",
     //"GuiContainerMixin",
     "GuiIngameMixin",
-    "GuiScreenAccessor"
-    //"GuiScreenMixin"
+    "GuiScreenAccessor",
+    "GuiScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 0
