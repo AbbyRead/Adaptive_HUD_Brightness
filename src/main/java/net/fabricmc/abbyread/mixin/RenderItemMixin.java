@@ -16,14 +16,18 @@ public abstract class RenderItemMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lorg/lwjgl/opengl/GL11;glColor4f(FFFF)V"
-            ), remap = false
+            ),
+            remap = false
     )
-    private void redirectGlColor4f(float red, float green, float blue, float alpha) {
+    private void adaptivehud$applyBrightness(float r, float g, float b, float a) {
         Minecraft mc = Minecraft.getMinecraft();
-        float brightness = 1.0f;
+        float brightness = 1.0F;
         if (mc != null && mc.thePlayer != null) {
             brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
         }
-        GL11.glColor4f(red * brightness, green * brightness, blue * brightness, alpha);
+
+        // Multiply brightness into each RGB component
+        GL11.glColor4f(r * brightness, g * brightness, b * brightness, a);
     }
+
 }
