@@ -23,6 +23,7 @@ public abstract class GuiIngameMixin {
     @Unique
     private boolean pushedXpAttrib = false;
 
+    // --- Main HUD rendering
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -43,6 +44,7 @@ public abstract class GuiIngameMixin {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
+    // --- XP bar
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -79,6 +81,7 @@ public abstract class GuiIngameMixin {
         }
     }
 
+    // --- Hotbar
     @Inject(
             method = "renderGameOverlay",
             at = @At(
