@@ -1,7 +1,6 @@
 package net.fabricmc.abbyread.mixin;
 
 import btw.community.abbyread.adaptivehud.BrightnessHelper;
-import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(FontRenderer.class)
 public abstract class FontRendererMixin {
-
     /**
      * Adjust the color argument for 5-arg drawString (with dropShadow).
      */
@@ -24,9 +22,14 @@ public abstract class FontRendererMixin {
     )
     private int adjustTextBrightness(int color) {
         Minecraft mc = Minecraft.getMinecraft();
-        EntityPlayer player = (mc != null) ? mc.thePlayer : null;
+        if (mc == null) return color;
 
-        float brightness = (player != null) ? BrightnessHelper.getCurrentHUDLight(player) : 1.0F;
+        // Skip dimming if player or world is missing, or if a GUI is open
+        if (mc.thePlayer == null || mc.currentScreen != null) {
+            return color;
+        }
+
+        float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
 
         // Extract original RGBA
         int alpha = (color >> 24) & 0xFF;

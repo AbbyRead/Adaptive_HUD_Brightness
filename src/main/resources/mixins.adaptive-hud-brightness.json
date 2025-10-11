@@ -8,11 +8,8 @@
   ],
   "client": [
     "FontRendererMixin",
-    "GuiButtonMixin",
-    "GuiContainerMixin",
     "GuiIngameMixin",
     "GuiScreenAccessor",
-    "GuiScreenMixin",
     "MinecraftAccessor"
   ],
   "injectors": {
