@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@SuppressWarnings("DiscouragedShift")
 @Mixin(GuiIngame.class)
 public abstract class GuiIngameMixin {
 
@@ -23,7 +24,6 @@ public abstract class GuiIngameMixin {
      * Inject just before the HUD elements (health, armor, food, hotbar) are drawn.
      * BtW / MC 1.6.4: trigger before InventoryPlayer.currentItem is accessed.
      */
-    @SuppressWarnings("all")
     @Inject(
             method = "renderGameOverlay",
             at = @At(
@@ -91,5 +91,34 @@ public abstract class GuiIngameMixin {
             GL11.glColor4f(1f, 1f, 1f, 1f);
         }
     }
+
+    @Inject(
+            method = "renderGameOverlay",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
+                    ordinal = 0, // the first drawTexturedModalRect call — hotbar background
+                    shift = At.Shift.BEFORE
+            )
+    )
+    private void preHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
+        if (mc == null || mc.thePlayer == null) return;
+        float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
+        GL11.glPushAttrib(GL11.GL_CURRENT_BIT);
+        GL11.glColor4f(brightness, brightness, brightness, 1.0F);
+    }
+
+    @Inject(
+            method = "renderGameOverlay",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/src/RenderHelper;enableGUIStandardItemLighting()V",
+                    shift = At.Shift.BEFORE
+            )
+    )
+    private void postHotbar(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
+        GL11.glPopAttrib();
+    }
+
 
 }
