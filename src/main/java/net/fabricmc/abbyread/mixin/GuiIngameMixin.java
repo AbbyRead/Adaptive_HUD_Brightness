@@ -23,30 +23,25 @@ public abstract class GuiIngameMixin {
     private Minecraft mc;
 
     // --- Compatibility ---
+    // Freelook is of particular concern because it's awesome, but it prevents the crosshair
+    //   reticule from dimming the way it should when using Adaptive HUD Brightness.
     @Unique
     private BTWAddon getFreeLookAddon() {
-        // Assuming "freelook" is the modID of the FreeLookAddon
+        // "btwfreelook" is the modID of jeffinitup's btw-freelook addon
         BTWAddon addon = AddonHandler.getModByID("btwfreelook");
         return addon; // returns null if not loaded
     }
-
     @Unique
     private boolean isFreeLookActive() {
         BTWAddon freeLook = getFreeLookAddon();
         if (freeLook == null) return false;
-
-        // If FreeLookAddon exposes an "isActive" property or method, call it here.
-        // For example, if FreeLookAddon had a method "isEnabled()":
-        // return ((FreeLookAddon) freeLook).isEnabled();
-
-        // Fallback if no method available:
-        return true; // just means the addon is loaded
+        return true; // freelook is running
     }
     @Unique
     private void applyBrightnessCompat() {
         if (isFreeLookActive()) {
-            // Custom brightness logic if FreeLookAddon is present
-            float b = getHudBrightness() * 0.8F; // example: slightly dimmer
+            // Opportunity to do something special if FreeLookAddon is present
+            float b = getHudBrightness();
             GL11.glColor4f(b, b, b, 1.0F);
         } else {
             // Default behavior
