@@ -1,5 +1,7 @@
 package net.fabricmc.abbyread.mixin;
 
+import btw.AddonHandler;
+import btw.BTWAddon;
 import btw.community.abbyread.adaptivehud.BrightnessHelper;
 import net.minecraft.src.GuiIngame;
 import net.minecraft.src.Minecraft;
@@ -12,13 +14,47 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@SuppressWarnings("DiscouragedShift")
+@SuppressWarnings({"DiscouragedShift", "UnnecessaryLocalVariable", "RedundantIfStatement"})
 @Mixin(GuiIngame.class)
 public abstract class GuiIngameMixin {
 
     @Final
     @Shadow
     private Minecraft mc;
+
+    // --- Compatibility ---
+    @Unique
+    private BTWAddon getFreeLookAddon() {
+        // Assuming "freelook" is the modID of the FreeLookAddon
+        BTWAddon addon = AddonHandler.getModByID("btwfreelook");
+        return addon; // returns null if not loaded
+    }
+
+    @Unique
+    private boolean isFreeLookActive() {
+        BTWAddon freeLook = getFreeLookAddon();
+        if (freeLook == null) return false;
+
+        // If FreeLookAddon exposes an "isActive" property or method, call it here.
+        // For example, if FreeLookAddon had a method "isEnabled()":
+        // return ((FreeLookAddon) freeLook).isEnabled();
+
+        // Fallback if no method available:
+        return true; // just means the addon is loaded
+    }
+    @Unique
+    private void applyBrightnessCompat() {
+        if (isFreeLookActive()) {
+            // Custom brightness logic if FreeLookAddon is present
+            float b = getHudBrightness() * 0.8F; // example: slightly dimmer
+            GL11.glColor4f(b, b, b, 1.0F);
+        } else {
+            // Default behavior
+            applyBrightness();
+        }
+    }
+
+
 
     // --- Utility methods ---
     @Unique
@@ -48,7 +84,11 @@ public abstract class GuiIngameMixin {
             )
     )
     private void prePlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        applyBrightness();
+        if (isFreeLookActive()) {
+            applyBrightnessCompat();
+        } else {
+            applyBrightness();
+        }
     }
 
     @Inject(
