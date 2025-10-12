@@ -40,14 +40,6 @@ Adaptive HUD Brightness enhances readability by making the heads-up display (hot
 
 ---
 
-### Possible Extensions (Under Consideration)
-
-* Night vision and torchlight flicker integration.
-* Configurable minimum and maximum HUD brightness.
-* Support for mod-added light sources in a consistent manner.
-
----
-
 ## Installation
 
 1. Install Better Than Wolves: Community Edition 3.0.0 + Legacy Fabric by following the instructions on the [wiki](https://wiki.btwce.com/view/Main_Page).
