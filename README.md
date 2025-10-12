@@ -15,15 +15,10 @@ Adaptive HUD Brightness enhances readability by making the heads-up display (hot
 * The HUD responds to the light level at the player’s eye position.
 * Vanilla blocks and ambient light influence HUD brightness, making low-light areas darker and bright areas fully visible.
 
-**Smooth-ish Transitions**:
+**Smooth Transitions**:
 
 * Brightness changes are smoothed across frames to reduce abrupt jumps.
 * Even in total darkness, a minimum brightness ensures the HUD remains visible.
-
-**Block and Sky Light Considered**:
-
-* Both block light (torches, glowstone, etc.) and sky light are taken into account.
-* Gives a balance between underground torchlight and outdoor daylight.
 
 **Other Notes**
 
@@ -36,7 +31,6 @@ Adaptive HUD Brightness enhances readability by making the heads-up display (hot
 
 * All calculations occur on the client.
 * No changes to the server, world data, or other players.
-* Fully compatible with existing Better Than Wolves CE worlds.
 
 ---
 
@@ -55,6 +49,9 @@ Adaptive HUD Brightness enhances readability by making the heads-up display (hot
 * **Mod Loader**: Fabric/Mixin based (Packaged with the BTW Instance)
 * Designed to work with the vanilla HUD.
 * Should not interfere with other addons, though HUD-altering mods may conflict visually.
+* Currently has slight incompatibility with BTW-Freelook, but Jeff is in the process of retooling it for BTW proper.
+  * The only problem I'm aware of is that the crosshair is prevented from dimming when Freelook is loaded.
+  * Freelook is awesome though.  You should try it.
 
 ---
 
