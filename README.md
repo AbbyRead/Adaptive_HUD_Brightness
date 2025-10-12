@@ -4,7 +4,7 @@ A Better Than Wolves Community Edition addon that dynamically adjusts the bright
 
 ## Overview
 
-Adaptive HUD Brightness enhances immersion and reduces eye strain by making the HUD respond to the light conditions around the player.
+Adaptive HUD Brightness enhances immersion and reduces eye strain by making the HUD adapt to the light conditions around the player.
 Care has been taken to avoid overstepping and affecting other GUI elements.  If anyone wants menus to dim, that's some whole other rigmarole that I'm not prepared for, personally.
 
 ## Features
