@@ -21,7 +21,7 @@ Care has been taken to avoid overstepping and affecting other GUI elements.  If 
 * Brightness changes are smoothed across frames to reduce abrupt jumps.
 * Even in total darkness, a minimum brightness ensures the HUD remains visible.
 
-**Other Notes**
+**Other Notes**:
 
 * The effect is limited to the HUD; it does **not** affect world lighting.
 * Could help in the video editing process if you need to brighten footage.
