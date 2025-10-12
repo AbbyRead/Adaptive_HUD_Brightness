@@ -1,10 +1,11 @@
 # Adaptive HUD Brightness
 
-A Better Than Wolves Community Edition addon that adjusts the in-game HUD brightness based on the light level at the player's head.
+A Better Than Wolves Community Edition addon that dynamically adjusts the brightness of the Heads-Up Display (the user interface elements in normal gameplay, outside of menus).
 
 ## Overview
 
-Adaptive HUD Brightness enhances readability by making the heads-up display (hotbar, health, armor, and other HUD elements) respond to the light conditions around the player. In dark caves, the HUD dims, and in well-lit areas it brightens, giving a more natural visual feedback for your surroundings while maintaining the classic BTW feel.
+Adaptive HUD Brightness enhances immersion and reduces eye strain by making the HUD respond to the light conditions around the player.
+Care has been taken to avoid overstepping and affecting other GUI elements.  If anyone wants menus to dim, that's some whole other rigmarole that I'm not prepared for, personally.
 
 ## Features
 
