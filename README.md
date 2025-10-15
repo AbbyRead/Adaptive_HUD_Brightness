@@ -50,6 +50,7 @@ Care has been taken to avoid overstepping and affecting other GUI elements.  If 
 * **Mod Loader**: Fabric/Mixin based (Packaged with the BTW Instance)
 * Designed to work with the vanilla HUD.
 * Should not interfere with other addons, though HUD-altering mods may conflict visually.
+* Tested **compatible** with [Dynamic Lights](https://github.com/BTW-Community/Dynamic-Lights-3) by [Hiracho](https://github.com/Hirachosan).
 * Currently has slight incompatibility with BTW-Freelook, but Jeff is in the process of retooling it for BTW proper.
   * The only problem I'm aware of is that the crosshair is prevented from dimming when Freelook is loaded.
   * Freelook is awesome though.  You should try it.
