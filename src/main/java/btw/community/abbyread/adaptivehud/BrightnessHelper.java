@@ -2,7 +2,9 @@ package btw.community.abbyread.adaptivehud;
 
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.EnumSkyBlock;
+import net.minecraft.src.FontRenderer;
 import net.minecraft.src.World;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Computes an adaptive HUD brightness value based on local light and global sky factors.
@@ -14,6 +16,18 @@ public class BrightnessHelper {
 
     private static float lastBrightness = 1.0F;
     private static long lastUpdateTime = System.currentTimeMillis();
+
+    // Debug flag
+    public static boolean DEBUG = true;
+
+    // Cached debug values
+    private static float cachedBrightness;
+    private static int cachedFeetBlockLight;
+    private static int cachedHeadBlockLight;
+    private static int cachedSkyLightRaw;
+    private static float cachedSunFactor;
+    private static float cachedMoonFactor;
+    private static boolean cachedCanSeeSky;
 
     public static float getCurrentHUDLight(EntityPlayer player) {
         if (player == null || player.worldObj == null) {
@@ -29,6 +43,12 @@ public class BrightnessHelper {
         // --- Sample local light levels ---
         int skyLightRaw = world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z);
         int blockLight = world.getBlockLightValue(x, y, z);
+
+        // Cache for debug
+        cachedFeetBlockLight = world.getSavedLightValue(EnumSkyBlock.Block, x, (int) Math.floor(player.posY), z);
+        cachedHeadBlockLight = world.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
+        cachedSkyLightRaw = Math.max(world.getSavedLightValue(EnumSkyBlock.Sky, x, (int) Math.floor(player.posY), z),
+                world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z));
 
         // --- Apply global darkening (night / weather) ---
         int adjustedSkyLight = skyLightRaw - world.skylightSubtracted;
@@ -59,12 +79,20 @@ public class BrightnessHelper {
             float nightBlend = 1.0F - sunFactor;
             globalBrightness = nightBrightnessBase * nightBlend;
 
-            // Scale local brightness by sunlight (reduces at night)
-            localBrightness *= sunFactor;
+            // During day, use adjusted sky light; at night, use moon-based brightness
+            if (sunFactor > 0.5F) {
+                // Daytime: scale local brightness by sunlight
+                localBrightness = Math.max(localBrightness, adjustedSkyLight / 15.0F * sunFactor);
+            }
+
+            // Cache for debug
+            cachedSunFactor = sunFactor;
+            cachedMoonFactor = world.getCurrentMoonPhaseFactor();
+            cachedCanSeeSky = world.canBlockSeeTheSky(x, y, z);
         }
 
         // --- Combine local and global contributions ---
-        float sampled = Math.max(localBrightness, adjustedSkyLight / 15.0F) + globalBrightness;
+        float sampled = localBrightness + globalBrightness;
 
         // --- Clamp for readability ---
         final float MIN = 0.05F;  // Lowered to allow darker nights
@@ -83,7 +111,30 @@ public class BrightnessHelper {
                 : 1.0F - (float) Math.pow(0.25F, deltaSeconds * 3.0F); // darken slow
 
         lastBrightness += diff * alpha;
+        cachedBrightness = lastBrightness;
+
         return lastBrightness;
+    }
+
+    /**
+     * Renders debug information about brightness calculations.
+     * Should be called after all HUD rendering is complete with color reset to white.
+     */
+    public static void renderDebugInfo(FontRenderer fontRenderer, boolean showDebugScreen) {
+        if (!showDebugScreen || !DEBUG || fontRenderer == null) return;
+
+        // Ensure color is reset before drawing debug text
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+
+        float localBrightness = Math.max(cachedFeetBlockLight, cachedHeadBlockLight) / 15.0F;
+        float rawSkyBrightness = cachedSkyLightRaw / 15.0F;
+
+        fontRenderer.drawStringWithShadow(String.format("HUD Brightness: %.2f", cachedBrightness), 2, 132, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("Block Light: %d (%.2f)", Math.max(cachedFeetBlockLight, cachedHeadBlockLight), localBrightness), 2, 142, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("Sky Light Raw: %d (%.2f)", cachedSkyLightRaw, rawSkyBrightness), 2, 152, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("Sun Factor: %.2f", cachedSunFactor), 2, 162, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("Moon Phase: %.2f", cachedMoonFactor), 2, 172, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("Can See Sky: %s", cachedCanSeeSky), 2, 182, 0xFFFFFF);
     }
 
     /** Optional manual override */
