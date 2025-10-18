@@ -7,7 +7,8 @@ import net.minecraft.src.World;
 /**
  * Computes an adaptive HUD brightness value based on local light and global sky factors.
  * <p>
- * Adds support for moon-phase brightness, so the HUD is slightly brighter on full-moon nights.
+ * Adds support for moon-phase brightness, with new moons causing near-complete darkness
+ * and full moons providing the most nighttime brightness.
  */
 public class BrightnessHelper {
 
@@ -40,14 +41,25 @@ public class BrightnessHelper {
         float globalBrightness = 0.0F;
         if (adjustedSkyLight > 0) {
             float sunFactor = world.getSunBrightness(1.0F);
-            float moonFactor = world.getCurrentMoonPhaseFactor();
 
-            // Night brightness contribution based on moon phase
-            float nightBrightnessBase = 0.1F + 0.2F * moonFactor; // 0.1–0.3
-            float nightBlend = 1.0F - sunFactor;                  // 1 = midnight, 0 = noon
+            // Get moon phase (0-7): 0 = full moon, 4 = new moon
+            int moonPhase = world.provider.getMoonPhase(world.getWorldTime());
+
+            // Calculate moon brightness based on distance from new moon (phase 4)
+            // Full moon (phase 0): moonBrightness = 1.0
+            // New moon (phase 4): moonBrightness = 0.0
+            float moonBrightness = Math.abs(4 - moonPhase) / 4.0F;
+
+            // Calculate night brightness based on moon phase
+            // Full moon: 0.3 brightness
+            // New moon: 0.1 brightness
+            float nightBrightnessBase = 0.1F + 0.2F * moonBrightness;
+
+            // nightBlend: 1.0 at midnight, 0.0 at noon
+            float nightBlend = 1.0F - sunFactor;
             globalBrightness = nightBrightnessBase * nightBlend;
 
-            // Optional: daytime contribution scales local sky light
+            // Scale local brightness by sunlight (reduces at night)
             localBrightness *= sunFactor;
         }
 
@@ -55,7 +67,7 @@ public class BrightnessHelper {
         float sampled = Math.max(localBrightness, adjustedSkyLight / 15.0F) + globalBrightness;
 
         // --- Clamp for readability ---
-        final float MIN = 0.1F;
+        final float MIN = 0.05F;  // Lowered to allow darker nights
         final float MAX = 1.0F;
         if (Float.isNaN(sampled) || sampled < MIN) sampled = MIN;
         if (sampled > MAX) sampled = MAX;
