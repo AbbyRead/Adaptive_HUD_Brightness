@@ -6,7 +6,7 @@ import net.minecraft.src.World;
 
 /**
  * Computes an adaptive HUD brightness value based on local light and global sky factors.
- * </p>
+ * <p>
  * Adds support for moon-phase brightness, so the HUD is slightly brighter on full-moon nights.
  */
 public class BrightnessHelper {
@@ -33,17 +33,26 @@ public class BrightnessHelper {
         int adjustedSkyLight = skyLightRaw - world.skylightSubtracted;
         if (adjustedSkyLight < 0) adjustedSkyLight = 0;
 
-        // --- Normalize to [0–1] range ---
-        float sampled = Math.max(adjustedSkyLight, blockLight) / 15.0F;
+        // --- Normalize local block light ---
+        float localBrightness = blockLight / 15.0F;
 
-        // --- Global factors ---
-        float sunFactor = world.getSunBrightness(1.0F);
-        float moonFactor = world.getCurrentMoonPhaseFactor();
+        // --- Compute global sky contribution only if player can see the sky ---
+        float globalBrightness = 0.0F;
+        if (adjustedSkyLight > 0) {
+            float sunFactor = world.getSunBrightness(1.0F);
+            float moonFactor = world.getCurrentMoonPhaseFactor();
 
-        // --- Add moon-phase brightness contribution at night ---
-        float nightBrightnessBase = 0.1F + 0.2F * moonFactor; // 0.1–0.3 depending on moon
-        float nightBlend = 1.0F - sunFactor;                  // how "night" it is (1 = midnight)
-        sampled = (sampled * sunFactor) + (nightBrightnessBase * nightBlend);
+            // Night brightness contribution based on moon phase
+            float nightBrightnessBase = 0.1F + 0.2F * moonFactor; // 0.1–0.3
+            float nightBlend = 1.0F - sunFactor;                  // 1 = midnight, 0 = noon
+            globalBrightness = nightBrightnessBase * nightBlend;
+
+            // Optional: daytime contribution scales local sky light
+            localBrightness *= sunFactor;
+        }
+
+        // --- Combine local and global contributions ---
+        float sampled = Math.max(localBrightness, adjustedSkyLight / 15.0F) + globalBrightness;
 
         // --- Clamp for readability ---
         final float MIN = 0.1F;
