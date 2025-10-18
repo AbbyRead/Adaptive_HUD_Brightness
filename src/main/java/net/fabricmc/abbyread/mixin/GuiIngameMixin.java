@@ -3,6 +3,7 @@ package net.fabricmc.abbyread.mixin;
 import btw.AddonHandler;
 import btw.BTWAddon;
 import btw.community.abbyread.adaptivehud.BrightnessHelper;
+import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiIngame;
 import net.minecraft.src.Minecraft;
 import org.lwjgl.opengl.GL11;
@@ -14,9 +15,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@SuppressWarnings({"DiscouragedShift", "UnnecessaryLocalVariable", "RedundantIfStatement"})
+@SuppressWarnings({"DiscouragedShift", "UnnecessaryLocalVariable", "RedundantIfStatement", "FieldCanBeLocal"})
 @Mixin(GuiIngame.class)
 public abstract class GuiIngameMixin {
+    @Unique
+    private final boolean DEBUG = false;
 
     @Final
     @Shadow
@@ -55,7 +58,13 @@ public abstract class GuiIngameMixin {
     @Unique
     private float getHudBrightness() {
         if (mc == null || mc.thePlayer == null || ((MinecraftAccessor) mc).getIsGamePaused()) return 1.0F;
-        return BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
+        FontRenderer fr = this.mc.fontRenderer;
+        float brightness = BrightnessHelper.getCurrentHUDLight(mc.thePlayer);
+        if (mc.gameSettings.showDebugInfo && DEBUG) {
+            // Appears to glitch the hud while on the debug screen
+            fr.drawStringWithShadow(String.format("HUD Brightness: %.2f", brightness), 2, 132, 0xFFFFFF);
+        }
+        return brightness;
     }
 
     @Unique

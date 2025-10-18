@@ -36,17 +36,17 @@ public class BrightnessHelper {
         // --- Normalize to [0–1] range ---
         float sampled = Math.max(adjustedSkyLight, blockLight) / 15.0F;
 
-        // --- Blend in global lighting factors (sun + moon) ---
-        float sunFactor = world.getSunBrightness(1.0F);         // 0 at midnight, 1 at noon
-        float moonFactor = world.getCurrentMoonPhaseFactor();   // 0 new moon → 1 full moon
+        // --- Global factors ---
+        float sunFactor = world.getSunBrightness(1.0F);
+        float moonFactor = world.getCurrentMoonPhaseFactor();
 
-        // Weighting:
-        //   - Local sampled light dominates (70%)
-        //   - Sun and moon add ambient context (20% + 10%)
-        sampled = (sampled * 0.7F) + ((sunFactor * 0.2F) + (moonFactor * 0.1F));
+        // --- Add moon-phase brightness contribution at night ---
+        float nightBrightnessBase = 0.1F + 0.2F * moonFactor; // 0.1–0.3 depending on moon
+        float nightBlend = 1.0F - sunFactor;                  // how "night" it is (1 = midnight)
+        sampled = (sampled * sunFactor) + (nightBrightnessBase * nightBlend);
 
         // --- Clamp for readability ---
-        final float MIN = 0.2F;
+        final float MIN = 0.1F;
         final float MAX = 1.0F;
         if (Float.isNaN(sampled) || sampled < MIN) sampled = MIN;
         if (sampled > MAX) sampled = MAX;
