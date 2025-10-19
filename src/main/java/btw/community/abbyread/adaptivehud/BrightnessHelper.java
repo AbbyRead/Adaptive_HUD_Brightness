@@ -7,175 +7,151 @@ import net.minecraft.src.World;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Computes an adaptive HUD brightness value based on local light and global sky factors.
- * <p>
- * Adds support for moon-phase brightness, with new moons causing near-complete darkness
- * and full moons providing the most nighttime brightness.
+ * Computes adaptive HUD brightness based on player light exposure,
+ * accounting for moon phase and day/night cycles.
+ *
+ * Optimized for performance: when DEBUG == false, all debug
+ * tracking and string rendering are skipped.
  */
-@SuppressWarnings("FieldCanBeLocal")
 public class BrightnessHelper {
 
     private static float lastBrightness = 1.0F;
     private static long lastUpdateTime = System.currentTimeMillis();
-
-    // Debug flag
     public static boolean DEBUG = true;
 
-    // Cached debug values
-    private static float cachedBrightness = 1.0F;
-    private static int cachedFeetBlockLight = 0;
-    private static int cachedHeadBlockLight = 0;
-    private static int cachedSkyLightRaw = 0;
-    private static float cachedSunFactor = 0.0F;
-    private static float cachedMoonFactor = 0.0F;
-    private static boolean cachedCanSeeSky = false;
+    // Brightness bounds
+    private static final float MIN_BRIGHTNESS = 0.1F;
+    private static final float MAX_BRIGHTNESS = 1.0F;
 
-    // Additional cached values for detailed debug
-    private static int cachedMoonPhase = 0;
-    private static float cachedMoonBrightness = 0.0F;
-    private static float cachedNightBrightnessBase = 0.0F;
-    private static float cachedNightBlend = 0.0F;
-    private static float cachedGlobalBrightness = 0.0F;
-    private static float cachedLocalBrightness = 0.0F;
-    private static float cachedSampled = 0.0F;
-    private static int cachedAdjustedSkyLight = 0;
-    private static int cachedSkylightSubtracted = 0;
+    // Debug info holder
+    private static final DebugState debug = new DebugState();
 
+    /**
+     * Computes the current adaptive HUD brightness for the given player.
+     */
     public static float getCurrentHUDLight(EntityPlayer player) {
-        if (player == null || player.worldObj == null) {
+        if (player == null || player.worldObj == null)
             return 0.8F;
-        }
 
         World world = player.worldObj;
-
         int x = (int) Math.floor(player.posX);
         int y = (int) Math.floor(player.posY + player.getEyeHeight());
         int z = (int) Math.floor(player.posZ);
 
-        // --- Sample local light levels ---
-        int skyLightRaw = world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z);
+        // --- Local lighting ---
         int blockLight = world.getBlockLightValue(x, y, z);
+        int rawSky = world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z);
+        int adjustedSky = Math.max(rawSky - world.skylightSubtracted, 0);
 
-        // Cache for debug
-        cachedFeetBlockLight = world.getSavedLightValue(EnumSkyBlock.Block, x, (int) Math.floor(player.posY), z);
-        cachedHeadBlockLight = world.getSavedLightValue(EnumSkyBlock.Block, x, y, z);
-        cachedSkyLightRaw = Math.max(world.getSavedLightValue(EnumSkyBlock.Sky, x, (int) Math.floor(player.posY), z),
-                world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z));
-
-        // --- Apply global darkening (night / weather) ---
-        int adjustedSkyLight = skyLightRaw - world.skylightSubtracted;
-        if (adjustedSkyLight < 0) adjustedSkyLight = 0;
-
-        // Cache for debug
-        cachedAdjustedSkyLight = adjustedSkyLight;
-        cachedSkylightSubtracted = world.skylightSubtracted;
-
-        // --- Normalize local block light ---
         float localBrightness = blockLight / 15.0F;
+        float globalBrightness = computeGlobalBrightness(world);
 
-        // --- Compute global sky contribution only if player can see the sky ---
-        float globalBrightness = 0.0F;
-        if (adjustedSkyLight > 0) {
-            float sunFactor = world.getSunBrightness(1.0F);
+        // Combine contributions
+        float target = localBrightness + globalBrightness;
 
-            // Get moon phase (0-7): 0 = full moon, 4 = new moon
-            int moonPhase = world.provider.getMoonPhase(world.getWorldTime());
+        // Update debug info only when needed
+        if (DEBUG) debug.capture(blockLight, adjustedSky, localBrightness, globalBrightness, target);
 
-            // Calculate moon brightness based on distance from new moon (phase 4)
-            // Full moon (phase 0): moonBrightness = 1.0
-            // New moon (phase 4): moonBrightness = 0.0
-            float moonBrightness = Math.abs(4 - moonPhase) / 4.0F;
+        // Smooth transition and clamp
+        lastBrightness = smooth(lastBrightness, target);
+        lastBrightness = clamp(lastBrightness);
 
-            // Calculate night brightness based on moon phase
-            // Full moon: 0.3 brightness
-            // New moon: 0.1 brightness
-            float nightBrightnessBase = 0.1F + 0.2F * moonBrightness;
-
-            // nightBlend: 1.0 at midnight, 0.0 at noon
-            float nightBlend = 1.0F - sunFactor;
-            globalBrightness = nightBrightnessBase * nightBlend;
-
-            // Cache for debug
-            cachedMoonPhase = moonPhase;
-            cachedMoonBrightness = moonBrightness;
-            cachedNightBrightnessBase = nightBrightnessBase;
-            cachedNightBlend = nightBlend;
-            cachedGlobalBrightness = globalBrightness;
-
-            // During day, use adjusted sky light; at night, use moon-based brightness
-            if (sunFactor > 0.5F) {
-                // Daytime: scale local brightness by sunlight
-                localBrightness = Math.max(localBrightness, adjustedSkyLight / 15.0F * sunFactor);
-            }
-
-            // Cache for debug
-            cachedSunFactor = sunFactor;
-            cachedMoonFactor = world.getCurrentMoonPhaseFactor();
-            cachedCanSeeSky = world.canBlockSeeTheSky(x, y, z);
-        }
-
-        // --- Combine local and global contributions ---
-        float sampled = localBrightness + globalBrightness;
-
-        // Cache for debug
-        cachedLocalBrightness = localBrightness;
-        cachedSampled = sampled;
-
-        // --- Clamp for readability ---
-        final float MIN = 0.05F;  // Lowered to allow darker nights
-        final float MAX = 1.0F;
-        if (Float.isNaN(sampled) || sampled < MIN) sampled = MIN;
-        if (sampled > MAX) sampled = MAX;
-
-        // --- Temporal smoothing (adaptive adjustment) ---
-        long now = System.currentTimeMillis();
-        float deltaSeconds = Math.min((now - lastUpdateTime) / 1000.0F, 0.25F);
-        lastUpdateTime = now;
-
-        float diff = sampled - lastBrightness;
-        float alpha = diff > 0.0F
-                ? 1.0F - (float) Math.pow(0.25F, deltaSeconds * 8.0F)  // brighten fast
-                : 1.0F - (float) Math.pow(0.25F, deltaSeconds * 3.0F); // darken slow
-
-        lastBrightness += diff * alpha;
-        cachedBrightness = lastBrightness;
+        if (DEBUG) debug.finalBrightness = lastBrightness;
 
         return lastBrightness;
     }
 
     /**
-     * Renders debug information about brightness calculations.
-     * Should be called after all HUD rendering is complete with color reset to white.
+     * Computes the contribution of sky and moonlight to overall brightness.
+     */
+    private static float computeGlobalBrightness(World world) {
+        float sunFactor = world.getSunBrightness(1.0F);
+
+        // Moon phase: 0 = full, 4 = new
+        int moonPhase = world.provider.getMoonPhase(world.getWorldTime());
+        float moonBrightness = Math.abs(4 - moonPhase) / 4.0F;
+
+        float nightBase = 0.25F * moonBrightness;
+        float nightBlend = 1.0F - sunFactor;
+        float nightScale = sunFactor < 0.5F ? 0.5F : 1.0F;
+
+        if (DEBUG) {
+            debug.nightBase = nightBase;
+            debug.nightBlend = nightBlend;
+            debug.nightScale = nightScale;
+            debug.moonPhase = moonPhase;
+            debug.moonBrightness = moonBrightness;
+        }
+
+        return nightBase * nightBlend * nightScale;
+    }
+
+    /**
+     * Smoothly interpolates current brightness toward a target brightness.
+     */
+    private static float smooth(float current, float target) {
+        long now = System.currentTimeMillis();
+        float deltaSeconds = Math.min((now - lastUpdateTime) / 1000.0F, 0.25F);
+        lastUpdateTime = now;
+
+        float diff = target - current;
+        float speed = diff > 0.0F ? 8.0F : 3.0F; // brighten fast, darken slow
+        float alpha = 1.0F - (float) Math.pow(0.25F, deltaSeconds * speed);
+
+        return current + diff * alpha;
+    }
+
+    /**
+     * Clamps brightness to the configured min/max range.
+     */
+    private static float clamp(float value) {
+        if (Float.isNaN(value)) return MIN_BRIGHTNESS;
+        return Math.max(MIN_BRIGHTNESS, Math.min(value, MAX_BRIGHTNESS));
+    }
+
+    /**
+     * Renders on-screen debug info if enabled.
      */
     public static void renderDebugInfo(FontRenderer fontRenderer, boolean showDebugScreen) {
         if (!showDebugScreen || !DEBUG || fontRenderer == null) return;
 
-        // Ensure color is reset before drawing debug text
-        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-
-        float localBrightness = Math.max(cachedFeetBlockLight, cachedHeadBlockLight) / 15.0F;
-        float rawSkyBrightness = cachedSkyLightRaw / 15.0F;
-
-        fontRenderer.drawStringWithShadow(String.format("HUD Brightness: %.2f", cachedBrightness), 2, 132, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("Block Light: %d (%.2f)", Math.max(cachedFeetBlockLight, cachedHeadBlockLight), localBrightness), 2, 142, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("Sky Light Raw: %d (%.2f)", cachedSkyLightRaw, rawSkyBrightness), 2, 152, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("Sun Factor: %.2f", cachedSunFactor), 2, 162, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("Moon Phase: %.2f", cachedMoonFactor), 2, 172, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("Can See Sky: %s", cachedCanSeeSky), 2, 182, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("HUD=%.2f ← smooth(%.2f) ← clamp(%.2f+%.2f=%.2f) ←", cachedBrightness, cachedSampled, cachedLocalBrightness, cachedGlobalBrightness, cachedLocalBrightness+cachedGlobalBrightness), 150, 162, 0xFFFFFF);
-        fontRenderer.drawStringWithShadow(String.format("(%d/15+(0.1+0.2×%.2f)×(1-%.2f)) [moon=%d, sun=%.2f]", Math.max(cachedFeetBlockLight, cachedHeadBlockLight), cachedMoonBrightness, cachedSunFactor, cachedMoonPhase, cachedSunFactor), 150, 172, 0xFFFFFF);
+        GL11.glColor4f(1, 1, 1, 1);
+        debug.render(fontRenderer);
     }
 
-    /** Optional manual override */
-    @SuppressWarnings("unused")
-    public static void setTargetBrightness(float target) {
-        final float MIN = 0.2F;
-        final float MAX = 1.0F;
-        if (Float.isNaN(target) || target < MIN) target = MIN;
-        if (target > MAX) target = MAX;
+    // ----------------------------------------------------------
+    // Internal debug record
+    // ----------------------------------------------------------
+    private static class DebugState {
+        float finalBrightness;
+        float local, global, target;
+        int blockLight, skyLight;
+        float nightBase, nightBlend, nightScale;
+        int moonPhase;
+        float moonBrightness;
 
-        float diff = target - lastBrightness;
-        float alpha = diff > 0 ? 0.3F : 0.15F;
-        lastBrightness += diff * alpha;
+        void capture(int blockLight, int skyLight, float local, float global, float target) {
+            this.blockLight = blockLight;
+            this.skyLight = skyLight;
+            this.local = local;
+            this.global = global;
+            this.target = target;
+        }
+
+        void render(FontRenderer fr) {
+            int y = 122;
+            fr.drawStringWithShadow(String.format("HUD Brightness: %.2f", finalBrightness), 2, y, 0xFFFFFF);
+            fr.drawStringWithShadow(String.format("Block Light: %d (%.2f)", blockLight, local), 2, y + 10, 0xFFFFFF);
+            fr.drawStringWithShadow(String.format("Sky Light: %d (%.2f)", skyLight, global), 2, y + 20, 0xFFFFFF);
+            fr.drawStringWithShadow(String.format("Total (local+global)=%.2f", target), 2, y + 30, 0xFFFFFF);
+
+            // Added detailed breakdown
+            fr.drawStringWithShadow("nightBase * nightBlend * nightScale", 2, y + 45, 0xFFFFFF);
+            fr.drawStringWithShadow(
+                    String.format("%.3f * %.3f * %.3f", nightBase, nightBlend, nightScale),
+                    2, y + 55, 0xFFFFFF
+            );
+            fr.drawStringWithShadow(String.format("Moon Phase: %d (%.2f)", moonPhase, moonBrightness), 2, y + 70, 0xFFFFFF);
+        }
     }
 }
