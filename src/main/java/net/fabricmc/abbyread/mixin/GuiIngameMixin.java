@@ -49,7 +49,6 @@ public abstract class GuiIngameMixin {
     }
 
 
-
     // --- Utility methods ---
     @Unique
     private float getHudBrightness() {
@@ -66,15 +65,6 @@ public abstract class GuiIngameMixin {
     @Unique
     private void resetColor() {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    // --- Debug rendering (separate from main HUD rendering to avoid corruption) ---
-    @Inject(
-            method = "renderGameOverlay",
-            at = @At("TAIL")
-    )
-    private void renderDebugInfo(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        BrightnessHelper.renderDebugInfo(mc.fontRenderer, mc.gameSettings.showDebugInfo);
     }
 
     // --- Action Bar (health, armor, food) dimming ---
