@@ -35,12 +35,18 @@ public class BrightnessHelper {
 
         World world = player.worldObj;
         int x = (int) Math.floor(player.posX);
-        int y = (int) Math.floor(player.posY + player.getEyeHeight());
+        int feetY = (int) Math.floor(player.posY);               // feet
+        int headY = (int) Math.floor(player.posY + player.getEyeHeight()); // head
         int z = (int) Math.floor(player.posZ);
 
-        // --- Local lighting ---
-        int blockLight = world.getBlockLightValue(x, y, z);
-        int rawSky = world.getSavedLightValue(EnumSkyBlock.Sky, x, y, z);
+        int blockLightFeet = world.getBlockLightValue(x, feetY, z);
+        int blockLightHead = world.getBlockLightValue(x, headY, z);
+        int blockLight = Math.max(blockLightFeet, blockLightHead);
+
+        int skyLightFeet = world.getSavedLightValue(EnumSkyBlock.Sky, x, feetY, z);
+        int skyLightHead  = world.getSavedLightValue(EnumSkyBlock.Sky, x, headY, z);
+        int rawSky = Math.max(skyLightFeet, skyLightHead);
+
         int adjustedSky = Math.max(rawSky - world.skylightSubtracted, 0);
 
         float localBrightness = blockLight / 15.0F;
