@@ -17,7 +17,7 @@ public class BrightnessHelper {
 
     private static float lastBrightness = 1.0F;
     private static long lastUpdateTime = System.currentTimeMillis();
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
 
     // Brightness bounds
     private static final float MIN_BRIGHTNESS = 0.1F;
