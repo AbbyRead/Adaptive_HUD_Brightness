@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL11;
  * Adds support for moon-phase brightness, with new moons causing near-complete darkness
  * and full moons providing the most nighttime brightness.
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class BrightnessHelper {
 
     private static float lastBrightness = 1.0F;
@@ -21,13 +22,24 @@ public class BrightnessHelper {
     public static boolean DEBUG = true;
 
     // Cached debug values
-    private static float cachedBrightness;
-    private static int cachedFeetBlockLight;
-    private static int cachedHeadBlockLight;
-    private static int cachedSkyLightRaw;
-    private static float cachedSunFactor;
-    private static float cachedMoonFactor;
-    private static boolean cachedCanSeeSky;
+    private static float cachedBrightness = 1.0F;
+    private static int cachedFeetBlockLight = 0;
+    private static int cachedHeadBlockLight = 0;
+    private static int cachedSkyLightRaw = 0;
+    private static float cachedSunFactor = 0.0F;
+    private static float cachedMoonFactor = 0.0F;
+    private static boolean cachedCanSeeSky = false;
+
+    // Additional cached values for detailed debug
+    private static int cachedMoonPhase = 0;
+    private static float cachedMoonBrightness = 0.0F;
+    private static float cachedNightBrightnessBase = 0.0F;
+    private static float cachedNightBlend = 0.0F;
+    private static float cachedGlobalBrightness = 0.0F;
+    private static float cachedLocalBrightness = 0.0F;
+    private static float cachedSampled = 0.0F;
+    private static int cachedAdjustedSkyLight = 0;
+    private static int cachedSkylightSubtracted = 0;
 
     public static float getCurrentHUDLight(EntityPlayer player) {
         if (player == null || player.worldObj == null) {
@@ -54,6 +66,10 @@ public class BrightnessHelper {
         int adjustedSkyLight = skyLightRaw - world.skylightSubtracted;
         if (adjustedSkyLight < 0) adjustedSkyLight = 0;
 
+        // Cache for debug
+        cachedAdjustedSkyLight = adjustedSkyLight;
+        cachedSkylightSubtracted = world.skylightSubtracted;
+
         // --- Normalize local block light ---
         float localBrightness = blockLight / 15.0F;
 
@@ -79,6 +95,13 @@ public class BrightnessHelper {
             float nightBlend = 1.0F - sunFactor;
             globalBrightness = nightBrightnessBase * nightBlend;
 
+            // Cache for debug
+            cachedMoonPhase = moonPhase;
+            cachedMoonBrightness = moonBrightness;
+            cachedNightBrightnessBase = nightBrightnessBase;
+            cachedNightBlend = nightBlend;
+            cachedGlobalBrightness = globalBrightness;
+
             // During day, use adjusted sky light; at night, use moon-based brightness
             if (sunFactor > 0.5F) {
                 // Daytime: scale local brightness by sunlight
@@ -93,6 +116,10 @@ public class BrightnessHelper {
 
         // --- Combine local and global contributions ---
         float sampled = localBrightness + globalBrightness;
+
+        // Cache for debug
+        cachedLocalBrightness = localBrightness;
+        cachedSampled = sampled;
 
         // --- Clamp for readability ---
         final float MIN = 0.05F;  // Lowered to allow darker nights
@@ -135,6 +162,8 @@ public class BrightnessHelper {
         fontRenderer.drawStringWithShadow(String.format("Sun Factor: %.2f", cachedSunFactor), 2, 162, 0xFFFFFF);
         fontRenderer.drawStringWithShadow(String.format("Moon Phase: %.2f", cachedMoonFactor), 2, 172, 0xFFFFFF);
         fontRenderer.drawStringWithShadow(String.format("Can See Sky: %s", cachedCanSeeSky), 2, 182, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("HUD=%.2f ← smooth(%.2f) ← clamp(%.2f+%.2f=%.2f) ←", cachedBrightness, cachedSampled, cachedLocalBrightness, cachedGlobalBrightness, cachedLocalBrightness+cachedGlobalBrightness), 150, 162, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(String.format("(%d/15+(0.1+0.2×%.2f)×(1-%.2f)) [moon=%d, sun=%.2f]", Math.max(cachedFeetBlockLight, cachedHeadBlockLight), cachedMoonBrightness, cachedSunFactor, cachedMoonPhase, cachedSunFactor), 150, 172, 0xFFFFFF);
     }
 
     /** Optional manual override */
